@@ -1,0 +1,29 @@
+name: Build pingcheck
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Build
+        shell: cmd
+        run: cl /nologo /EHsc /std:c++17 /O2 /MT pingcheck.cpp /Fe:pingcheck.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pingcheck
+          path: pingcheck.exe
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pingcheck.exe
